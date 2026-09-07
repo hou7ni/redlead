@@ -63,8 +63,8 @@ function setLanguage(lang){
 document.querySelectorAll('.langBtn').forEach(b=>b.addEventListener('click',()=>setLanguage(b.dataset.lang)));
 setLanguage(localStorage.getItem('redlead-language') || 'fr');
 const revealTargets=[...document.querySelectorAll(".badge,.hero h1,.hero p,.actions,.dashboardWrap,.sectionTitle,.sectionLead,.step,.proof,.cta")];revealTargets.forEach((el,i)=>{el.classList.add("reveal");if(el.classList.contains("step")||el.classList.contains("proof"))el.classList.add("revealDelay"+((i%3)+1));});const observer=new IntersectionObserver(entries=>entries.forEach(entry=>{if(entry.isIntersecting){entry.target.classList.add("visible");observer.unobserve(entry.target)}}),{threshold:.12});revealTargets.forEach(el=>observer.observe(el));
-const SUPABASE_URL='https://wjrhtvqnrloleuqhddxc.supabase.co';
-const SUPABASE_KEY='sb_publishable_kFSiq9HX9abTwwyvkPZQww_hLDJDfx2';
+const SUPABASE_URL='https://bfukblbbwwuifoqzhrvp.supabase.co';
+const SUPABASE_KEY='sb_publishable_AU654OpHAelspgqGwjprtw_iBAO497P';
 const supabase=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 async function goToApp(){window.location.href='./app.html'}
 (async()=>{const {data:{session}}=await supabase.auth.getSession();if(session) goToApp()})();
