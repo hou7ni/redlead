@@ -118,13 +118,6 @@ document.querySelector('.forgot').addEventListener('click',async e=>{
  const {error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+window.location.pathname});
  showAuthMessage(error?error.message:'Un email de réinitialisation a été envoyé.',!!error);
 });
-document.querySelectorAll('.authTrigger').forEach(btn=>{
-  btn.onclick=function(e){e.preventDefault();openAuth();return false};
-});
-const closeButton=document.querySelector('.closeAuth');
-if(closeButton) closeButton.onclick=function(e){e.preventDefault();closeAuth();return false};
-if(authSwitch) authSwitch.onclick=function(e){if(e.target.closest('button')){e.preventDefault();signup=!signup;renderAuth();}};
-if(authOverlay) authOverlay.onclick=function(e){if(e.target===authOverlay)closeAuth();};
 </script><script>
 (function(){
   function q(sel){return document.querySelector(sel)}
