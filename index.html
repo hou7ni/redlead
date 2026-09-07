@@ -86,13 +86,13 @@ const originalText = new Map();
 document.querySelectorAll('*').forEach(el => {
   if(['SCRIPT','STYLE'].includes(el.tagName)) return;
   [...el.childNodes].forEach(node => {
-    if(node.nodeType === Node.TEXT_NODE && node.nodeValue.trim()) originalText.set(node, node.nodeValue.trim());
+    if(node.nodeType === Node.TEXT_NODE && node.nodeValue.trim()) originalText.set(node, node.nodeValue);
   });
 });
 function setLanguage(lang){
   document.documentElement.lang=lang;
   document.title=lang==='en'?'Redlead — Find what to launch':'Redlead — Trouve quoi lancer';
-  originalText.forEach((fr,node)=>{ node.nodeValue=(translations[lang][fr] || fr); });
+  originalText.forEach((fr,node)=>{ const key=fr.trim(); const lead=fr.match(/^\s*/)[0], tail=fr.match(/\s*$/)[0]; node.nodeValue=lead+(translations[lang]?.[key] || key)+tail; });
   document.querySelectorAll('.langBtn').forEach(b=>b.classList.toggle('active',b.dataset.lang===lang));
   localStorage.setItem('redlead-language',lang);
 }
