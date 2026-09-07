@@ -125,4 +125,30 @@ const closeButton=document.querySelector('.closeAuth');
 if(closeButton) closeButton.onclick=function(e){e.preventDefault();closeAuth();return false};
 if(authSwitch) authSwitch.onclick=function(e){if(e.target.closest('button')){e.preventDefault();signup=!signup;renderAuth();}};
 if(authOverlay) authOverlay.onclick=function(e){if(e.target===authOverlay)closeAuth();};
+</script><script>
+(function(){
+  function q(sel){return document.querySelector(sel)}
+  function open(){var o=q('#authOverlay');if(o){o.classList.add('open');o.setAttribute('aria-hidden','false')}}
+  function close(){var o=q('#authOverlay');if(o){o.classList.remove('open');o.setAttribute('aria-hidden','true')}}
+  document.addEventListener('click',function(e){
+    var t=e.target.closest('a,button'); if(!t)return;
+    if(t.classList.contains('authTrigger')){e.preventDefault();open();return;}
+    if(t.classList.contains('closeAuth')){e.preventDefault();close();return;}
+    var sw=t.closest('#authSwitch');
+    if(sw&&t.tagName==='BUTTON'){
+      e.preventDefault();
+      var title=q('#authTitle'),sub=q('#authSubtitle'),submit=q('#authSubmit'),methods=q('#signupMethods'),forgot=q('.forgot');
+      var signup=title&&title.textContent.trim()!=="S'inscrire";
+      if(methods)methods.classList.toggle('show',signup);
+      if(forgot)forgot.style.display=signup?'none':'block';
+      if(title)title.textContent=signup?"S'inscrire":"Se connecter";
+      if(sub)sub.textContent=signup?"Crée ton compte Redlead.":"Accède à ton espace Redlead.";
+      if(submit)submit.textContent=signup?"Créer mon compte":"Se connecter";
+      sw.innerHTML=signup?'Déjà un compte ? <button type="button">Se connecter</button>':'Pas encore de compte ? <button type="button">S\'inscrire</button>';
+      return;
+    }
+    if(t.id==='acceptCookies'||t.classList.contains('acceptCookies')){var c=q('.cookiePopup');if(c)c.remove();}
+  });
+  document.addEventListener('click',function(e){if(e.target===q('#authOverlay'))close()});
+})();
 </script></body></html>
