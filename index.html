@@ -80,4 +80,15 @@ function showAuthMessage(message,error=false){authMessage.textContent=message;au
 authForm.addEventListener('submit',async e=>{e.preventDefault();const email=document.getElementById('authEmail').value.trim();const password=document.getElementById('authPassword').value;authSubmit.disabled=true;authSubmit.style.opacity='.65';if(signup){const {data,error}=await supabase.auth.signUp({email,password,options:{emailRedirectTo:window.location.origin+window.location.pathname}});if(error)showAuthMessage(error.message,true);else if(data.session)goToApp();else showAuthMessage('Vérifie ton email pour confirmer ton compte.')}else{const {data,error}=await supabase.auth.signInWithPassword({email,password});if(error)showAuthMessage('Email ou mot de passe incorrect.',true);else goToApp()}authSubmit.disabled=false;authSubmit.style.opacity=''});
 document.getElementById('googleAuth').addEventListener('click',async()=>{const {error}=await supabase.auth.signInWithOAuth({provider:'google',options:{redirectTo:window.location.origin+window.location.pathname}});if(error)showAuthMessage(error.message,true)});
 document.querySelector('.forgot').addEventListener('click',async e=>{e.preventDefault();const email=document.getElementById('authEmail').value.trim();if(!email){showAuthMessage('Entre ton email pour recevoir le lien.',true);return}const {error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+window.location.pathname});showAuthMessage(error?error.message:'Un email de réinitialisation a été envoyé.',!!error)});
+</script><script>
+document.addEventListener('DOMContentLoaded',function(){
+  var overlay=document.getElementById('authOverlay');
+  document.querySelectorAll('.authTrigger').forEach(function(btn){
+    btn.addEventListener('click',function(e){
+      e.preventDefault();
+      overlay.classList.add('open');
+      overlay.setAttribute('aria-hidden','false');
+    });
+  });
+});
 </script></body></html>
