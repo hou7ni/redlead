@@ -131,6 +131,13 @@ function renderAuth(){
   authSubmit.textContent=signup?"Créer mon compte":"Se connecter";
   authSwitch.innerHTML=signup?'Déjà un compte ? <button type="button">Se connecter</button>':'Pas encore de compte ? <button type="button">S\'inscrire</button>';
 }
+
+// Reliable interactive controls
+document.addEventListener('click',function(e){
+ const l=e.target.closest('.langBtn'); if(l){e.preventDefault();setLanguage?.(l.dataset.lang);return;}
+ const start=e.target.closest('.ideaStart'); if(start){e.preventDefault();start.style.display='none';const step=document.getElementById('ideaStep');if(step){step.classList.add('show');step.setAttribute('aria-hidden','false');}return;}
+ const choice=e.target.closest('.ideaChoice'); if(choice){e.preventDefault();document.getElementById('authOverlay')?.classList.add('open');}
+},true);
 const ideaStart=document.getElementById('ideaFinder')?.querySelector('.ideaStart');
 const ideaStep=document.getElementById('ideaStep');
 ideaStart?.addEventListener('click',()=>{ideaStart.style.display='none';ideaStep.classList.add('show');ideaStep.setAttribute('aria-hidden','false');});
