@@ -36,16 +36,6 @@
 <script>
 window.addEventListener('pageshow',()=>{document.documentElement.style.zoom='1';document.body.style.zoom='1';});
 document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});
-</script><script>
-document.addEventListener('click',function(e){
- const b=e.target.closest('.langBtn');if(!b)return;
- e.preventDefault();e.stopPropagation();
- const lang=b.dataset.lang;
- document.querySelectorAll('.langBtn').forEach(x=>x.classList.toggle('active',x===b));
- document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.dataset.i18n;if(window.translations&&translations[lang]&&translations[lang][k]!==undefined)el.textContent=translations[lang][k]});
- document.documentElement.lang=lang;
- localStorage.setItem('redleadLang',lang);
-},true);
 </script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>
 (function(){
   let signup=false;
@@ -103,7 +93,7 @@ document.querySelectorAll('*').forEach(el => {
 function setLanguage(lang){
   document.documentElement.lang=lang;
   document.title=lang==='en'?'Redlead — Find what to launch':'Redlead — Trouve quoi lancer';
-  originalText.forEach((fr,node)=>{ const key=fr.trim(); const lead=fr.match(/^\s*/)[0], tail=fr.match(/\s*$/)[0]; node.nodeValue=lead+(translations[lang]?.[key] || key)+tail; });
+  originalText.forEach((fr,node)=>{ const key=fr.trim(); const lead=fr.match(/^\s*/)[0], tail=fr.match(/\s*$/)[0]; node.nodeValue=lead+(window.translations[lang]?.[key] || key)+tail; });
   document.querySelectorAll('.langBtn').forEach(b=>b.classList.toggle('active',b.dataset.lang===lang));
   localStorage.setItem('redlead-language',lang);
 }
