@@ -165,4 +165,57 @@ document.querySelector('.forgot').addEventListener('click',async e=>{
  const {error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+window.location.pathname});
  showAuthMessage(error?error.message:'Un email de réinitialisation a été envoyé.',!!error);
 });
+</script><script>
+(function(){
+  const finder=document.getElementById('ideaFinder');
+  const step=document.getElementById('ideaStep');
+  const openLogin=()=>{
+    const o=document.getElementById('authOverlay');
+    if(!o)return;
+    o.classList.add('open');
+    o.setAttribute('aria-hidden','false');
+    document.body.style.overflow='hidden';
+  };
+  document.addEventListener('click',function(e){
+    const start=e.target.closest('.ideaStart');
+    if(start){
+      e.preventDefault(); e.stopImmediatePropagation();
+      start.style.display='none';
+      if(step){step.classList.add('show');step.setAttribute('aria-hidden','false');}
+      return;
+    }
+    const choice=e.target.closest('.ideaChoice');
+    if(choice){
+      e.preventDefault(); e.stopImmediatePropagation();
+      openLogin();
+    }
+  },true);
+
+  const dict=window.translations||{};
+  const reverse={};
+  if(dict.en) Object.entries(dict.en).forEach(([fr,en])=>{if(en)reverse[en]=fr;});
+  const nodes=[];
+  document.querySelectorAll('body *').forEach(el=>{
+    if(['SCRIPT','STYLE','SVG','PATH'].includes(el.tagName))return;
+    [...el.childNodes].forEach(n=>{
+      if(n.nodeType===3&&n.nodeValue.trim()){
+        const raw=n.nodeValue,trim=raw.trim();
+        nodes.push({n,fr:reverse[trim]||trim,lead:raw.match(/^\s*/)[0],tail:raw.match(/\s*$/)[0]});
+      }
+    });
+  });
+  function apply(lang){
+    const d=(window.translations&&window.translations[lang])||{};
+    nodes.forEach(x=>x.n.nodeValue=x.lead+(lang==='en'?(d[x.fr]||x.fr):x.fr)+x.tail);
+    document.documentElement.lang=lang;
+    document.querySelectorAll('.langBtn').forEach(b=>b.classList.toggle('active',b.dataset.lang===lang));
+    localStorage.setItem('redlead-language',lang);
+  }
+  document.addEventListener('click',function(e){
+    const b=e.target.closest('.langBtn');
+    if(!b)return;
+    e.preventDefault();e.stopImmediatePropagation();
+    apply(b.dataset.lang);
+  },true);
+})();
 </script></body></html>
