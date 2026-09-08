@@ -38,26 +38,68 @@ window.addEventListener('pageshow',()=>{document.documentElement.style.zoom='1';
 document.addEventListener('dblclick',e=>e.preventDefault(),{passive:false});
 </script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>
 (function(){
-  let signup=false;
-  const overlay=()=>document.getElementById('authOverlay');
-  const open=()=>{const o=overlay();if(o){o.classList.add('open');o.setAttribute('aria-hidden','false')}};
-  const close=()=>{const o=overlay();if(o){o.classList.remove('open');o.setAttribute('aria-hidden','true')}};
-  function mode(){
-    const title=document.getElementById('authTitle'),sub=document.getElementById('authSubtitle'),submit=document.getElementById('authSubmit'),methods=document.getElementById('signupMethods'),forgot=document.querySelector('.forgot'),sw=document.getElementById('authSwitch');
-    if(methods)methods.classList.toggle('show',signup);
-    if(forgot)forgot.style.display=signup?'none':'block';
-    if(title)title.textContent=signup?"S'inscrire":"Se connecter";
-    if(sub)sub.textContent=signup?"Crée ton compte Redlead.":"Accède à ton espace Redlead.";
-    if(submit)submit.textContent=signup?"Créer mon compte":"Se connecter";
-    if(sw)sw.innerHTML=signup?'Déjà un compte ? <button type="button">Se connecter</button>':'Pas encore de compte ? <button type="button">S’inscrire</button>';
-  }
-  document.addEventListener('click',function(e){
-    const t=e.target.closest('a,button'); if(!t)return;
-    if(t.classList.contains('authTrigger')){e.preventDefault();e.stopImmediatePropagation();open();return;}
-    if(t.classList.contains('closeAuth')){e.preventDefault();e.stopImmediatePropagation();close();return;}
-    if(t.closest('#authSwitch')&&t.tagName==='BUTTON'){e.preventDefault();e.stopImmediatePropagation();signup=!signup;mode();return;}
-    if(e.target===overlay()){close();}
-  },true);
+ const URL='https://bfukblbbwwuifoqzhrvp.supabase.co';
+ const KEY='sb_publishable_AU654OpHAelspgqGwjprtw_iBAO497P';
+ const sb=window.supabase.createClient(URL,KEY);
+ let signup=false, verifying=false, pendingEmail='';
+ const $=id=>document.getElementById(id);
+ const overlay=$('authOverlay'), form=$('authForm'), title=$('authTitle'), subtitle=$('authSubtitle'), submit=$('authSubmit');
+ const emailFields=$('emailFields'), otpWrap=$('otpWrap'), methods=$('signupMethods'), authSwitch=$('authSwitch');
+ const forgot=document.querySelector('.forgot'), legal=document.querySelector('.authLegal'), msg=$('authMessage');
+ const digits=[...document.querySelectorAll('.otpDigit')];
+ const open=()=>{overlay.classList.add('open');overlay.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';};
+ const close=()=>{overlay.classList.remove('open');overlay.setAttribute('aria-hidden','true');document.body.style.overflow='';};
+ const message=(text,error=false)=>{msg.textContent=text;msg.style.display=text?'block':'none';msg.style.color=error?'#c43b25':'#4b7a4b';};
+ function render(){
+   emailFields.style.display=verifying?'none':'block';
+   otpWrap.style.display=verifying?'block':'none';
+   methods.style.display=(!verifying&&signup)?'block':'none';
+   forgot.style.display=(!verifying&&!signup)?'block':'none';
+   authSwitch.style.display=verifying?'none':'block';
+   legal.style.display=verifying?'none':'block';
+   if(verifying){title.textContent='Vérifie ton email';subtitle.textContent='Entre le code envoyé à ton adresse email.';submit.textContent='Vérifier le code';}
+   else if(signup){title.textContent='Créer un compte';subtitle.textContent='Commence à trouver des opportunités.';submit.textContent='Créer mon compte';authSwitch.innerHTML='Déjà un compte ? <button type="button" id="switchAuth">Se connecter</button>';}
+   else {title.textContent='Se connecter';subtitle.textContent='Accède à ton espace Redlead.';submit.textContent='Se connecter';authSwitch.innerHTML='Pas encore de compte ? <button type="button" id="switchAuth">S’inscrire</button>';}
+   message('');
+ }
+ document.addEventListener('click',e=>{
+   const trigger=e.target.closest('.authTrigger'); if(trigger){e.preventDefault();signup=false;verifying=false;render();open();return;}
+   if(e.target.closest('.closeAuth')){e.preventDefault();close();return;}
+   if(e.target.closest('#switchAuth')){e.preventDefault();signup=!signup;verifying=false;render();return;}
+   if(e.target===overlay)close();
+ },true);
+ digits.forEach((box,i)=>{
+   box.addEventListener('input',()=>{box.value=box.value.replace(/\D/g,'').slice(0,1);if(box.value&&digits[i+1])digits[i+1].focus();});
+   box.addEventListener('keydown',e=>{if(e.key==='Backspace'&&!box.value&&digits[i-1])digits[i-1].focus();});
+ });
+ form.addEventListener('submit',async e=>{
+   e.preventDefault(); submit.disabled=true;
+   try{
+     if(verifying){
+       const token=digits.map(x=>x.value).join('');
+       if(token.length!==6){message('Entre les 6 chiffres du code.',true);return;}
+       const {data,error}=await sb.auth.verifyOtp({email:pendingEmail,token,type:'signup'});
+       if(error){message('Code incorrect ou expiré.',true);return;}
+       if(data.session){location.href='./app.html';return;}
+       message('Code validé. Connecte-toi maintenant.');
+       verifying=false;signup=false;render();return;
+     }
+     const email=$('authEmail').value.trim(), password=$('authPassword').value;
+     if(!email||!password){message('Remplis ton email et ton mot de passe.',true);return;}
+     if(signup){
+       const {error}=await sb.auth.signUp({email,password});
+       if(error){message(error.message,true);return;}
+       pendingEmail=email;digits.forEach(x=>x.value='');verifying=true;
+       $('verifyEmailText').textContent='Nous avons envoyé un code à '+email+'.';
+       render();digits[0].focus();return;
+     }
+     const {error}=await sb.auth.signInWithPassword({email,password});
+     if(error){message('Email ou mot de passe incorrect.',true);return;}
+     location.href='./app.html';
+   }catch(error){message('Une erreur est survenue. Réessaie.',true);}
+   finally{submit.disabled=false;}
+ });
+ render();
 })();
 </script><script>
 window.translations = {
@@ -224,47 +266,5 @@ document.querySelector('.forgot').addEventListener('click',async e=>{
     e.preventDefault();e.stopImmediatePropagation();
     apply(b.dataset.lang);
   },true);
-})();
-</script><script>
-(function(){
- const URL='https://bfukblbbwwuifoqzhrvp.supabase.co';
- const KEY='sb_publishable_AU654OpHAelspgqGwjprtw_iBAO497P';
- const sb=window.supabase.createClient(URL,KEY);
- let pendingEmail='';
- const form=document.getElementById('authForm'), otpWrap=document.getElementById('otpWrap'); const otpDigits=[...document.querySelectorAll('.otpDigit')];
- const msg=document.getElementById('authMessage'), submit=document.getElementById('authSubmit');
- const show=(t,bad=false)=>{msg.textContent=t;msg.style.display='block';msg.style.color=bad?'#c43b25':'#4b7a4b'};
- 
-otpDigits.forEach((box,i)=>box.addEventListener('input',()=>{box.value=box.value.replace(/\D/g,'').slice(0,1);if(box.value&&otpDigits[i+1])otpDigits[i+1].focus();}));
- form.addEventListener('submit',async function(e){
-   e.preventDefault();e.stopImmediatePropagation();
-   const email=document.getElementById('authEmail').value.trim();
-   const password=document.getElementById('authPassword').value;
-   const signing=document.getElementById('authTitle').textContent.includes("S'inscrire");
-   submit.disabled=true;
-   try{
-     if(otpWrap.style.display!=='none'){
-       const {data,error}=await sb.auth.verifyOtp({email:pendingEmail,token:otpDigits.map(x=>x.value).join(''),type:'signup'});
-       if(error){show('Code incorrect ou expiré.',true);return;}
-       if(data.session) location.href='./app.html'; else show('Code validé. Connecte-toi maintenant.');
-       return;
-     }
-     if(signing){
-       const {error}=await sb.auth.signUp({email,password});
-       if(error){show(error.message,true);return;}
-       pendingEmail=email;otpWrap.style.display='block';
-       document.getElementById('emailFields').style.display='none';
-       document.getElementById('verifyEmailText').textContent='Nous avons envoyé un code à '+email+'.';
-       document.querySelector('.forgot').style.display='none';
-       submit.textContent='Vérifier le code';
-       show('');
-     }else{
-       const {error}=await sb.auth.signInWithPassword({email,password});
-       if(error){show('Email ou mot de passe incorrect.',true);return;}
-       location.href='./app.html';
-     }
-   }catch(err){show('Une erreur est survenue.',true);}
-   finally{submit.disabled=false;}
- },true);
 })();
 </script></body></html>
